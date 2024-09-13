@@ -26,9 +26,12 @@ type Mutex struct {
 
 	quorum int
 
-	genValueFunc func() (string, error)
-	value        string
-	until        time.Time
+	genValueFunc  func() (string, error)
+	value         string
+	until         time.Time
+	shuffle       bool
+	failFast      bool
+	setNXOnExtend bool
 
 	pools []redis.Pool
 }
@@ -48,13 +51,28 @@ func (m *Mutex) Until() time.Time {
 	return m.until
 }
 
+// TryLock only attempts to lock m once and returns immediately regardless of success or failure without retrying.
+func (m *Mutex) TryLock() error {
+	return m.TryLockContext(context.Background())
+}
+
+// TryLockContext only attempts to lock m once and returns immediately regardless of success or failure without retrying.
+func (m *Mutex) TryLockContext(ctx context.Context) error {
+	return m.lockContext(ctx, 1)
+}
+
 // Lock locks m. In case it returns an error on failure, you may retry to acquire the lock by calling this method again.
 func (m *Mutex) Lock() error {
-	return m.LockContext(nil)
+	return m.LockContext(context.Background())
 }
 
 // LockContext locks m. In case it returns an error on failure, you may retry to acquire the lock by calling this method again.
 func (m *Mutex) LockContext(ctx context.Context) error {
+	return m.lockContext(ctx, m.tries)
+}
+
+// lockContext locks m. In case it returns an error on failure, you may retry to acquire the lock by calling this method again.
+func (m *Mutex) lockContext(ctx context.Context, tries int) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -64,13 +82,21 @@ func (m *Mutex) LockContext(ctx context.Context) error {
 		return err
 	}
 
-	for i := 0; i < m.tries; i++ {
+	var timer *time.Timer
+	for i := 0; i < tries; i++ {
 		if i != 0 {
+			if timer == nil {
+				timer = time.NewTimer(m.delayFunc(i))
+			} else {
+				timer.Reset(m.delayFunc(i))
+			}
+
 			select {
 			case <-ctx.Done():
+				timer.Stop()
 				// Exit early if the context is done.
 				return ErrFailed
-			case <-time.After(m.delayFunc(i)):
+			case <-timer.C:
 				// Fall-through when the delay timer completes.
 			}
 		}
@@ -92,14 +118,14 @@ func (m *Mutex) LockContext(ctx context.Context) error {
 			m.until = until
 			return nil
 		}
-		func() (int, error) {
+		_, _ = func() (int, error) {
 			ctx, cancel := context.WithTimeout(ctx, time.Duration(int64(float64(m.expiry)*m.timeoutFactor)))
 			defer cancel()
 			return m.actOnPoolsAsync(func(pool redis.Pool) (bool, error) {
 				return m.release(ctx, pool, value)
 			})
 		}()
-		if i == m.tries-1 && err != nil {
+		if i == tries-1 && err != nil {
 			return err
 		}
 	}
@@ -109,7 +135,7 @@ func (m *Mutex) LockContext(ctx context.Context) error {
 
 // Unlock unlocks m and returns the status of unlock.
 func (m *Mutex) Unlock() (bool, error) {
-	return m.UnlockContext(nil)
+	return m.UnlockContext(context.Background())
 }
 
 // UnlockContext unlocks m and returns the status of unlock.
@@ -125,7 +151,7 @@ func (m *Mutex) UnlockContext(ctx context.Context) (bool, error) {
 
 // Extend resets the mutex's expiry and returns the status of expiry extension.
 func (m *Mutex) Extend() (bool, error) {
-	return m.ExtendContext(nil)
+	return m.ExtendContext(context.Background())
 }
 
 // ExtendContext resets the mutex's expiry and returns the status of expiry extension.
@@ -152,7 +178,7 @@ func (m *Mutex) ExtendContext(ctx context.Context) (bool, error) {
 //
 // Deprecated: Use Until instead. See https://github.com/go-redsync/redsync/issues/72.
 func (m *Mutex) Valid() (bool, error) {
-	return m.ValidContext(nil)
+	return m.ValidContext(context.Background())
 }
 
 // ValidContext returns true if the lock acquired through m is still valid. It may
@@ -206,8 +232,11 @@ func (m *Mutex) acquire(ctx context.Context, pool redis.Pool, value string) (boo
 }
 
 var deleteScript = redis.NewScript(1, `
-	if redis.call("GET", KEYS[1]) == ARGV[1] then
+	local val = redis.call("GET", KEYS[1])
+	if val == ARGV[1] then
 		return redis.call("DEL", KEYS[1])
+	elseif val == false then
+		return -1
 	else
 		return 0
 	end
@@ -223,8 +252,21 @@ func (m *Mutex) release(ctx context.Context, pool redis.Pool, value string) (boo
 	if err != nil {
 		return false, err
 	}
+	if status == int64(-1) {
+		return false, ErrLockAlreadyExpired
+	}
 	return status != int64(0), nil
 }
+
+var touchWithSetNXScript = redis.NewScript(1, `
+	if redis.call("GET", KEYS[1]) == ARGV[1] then
+		return redis.call("PEXPIRE", KEYS[1], ARGV[2])
+	elseif redis.call("SET", KEYS[1], ARGV[1], "PX", ARGV[2], "NX") then
+		return 1
+	else
+		return 0
+	end
+`)
 
 var touchScript = redis.NewScript(1, `
 	if redis.call("GET", KEYS[1]) == ARGV[1] then
@@ -240,6 +282,12 @@ func (m *Mutex) touch(ctx context.Context, pool redis.Pool, value string, expiry
 		return false, err
 	}
 	defer conn.Close()
+
+	touchScript := touchScript
+	if m.setNXOnExtend {
+		touchScript = touchWithSetNXScript
+	}
+
 	status, err := conn.Eval(touchScript, m.name, value, expiry)
 	if err != nil {
 		return false, err
@@ -249,31 +297,49 @@ func (m *Mutex) touch(ctx context.Context, pool redis.Pool, value string, expiry
 
 func (m *Mutex) actOnPoolsAsync(actFn func(redis.Pool) (bool, error)) (int, error) {
 	type result struct {
-		Node   int
-		Status bool
-		Err    error
+		node     int
+		statusOK bool
+		err      error
 	}
 
-	ch := make(chan result)
+	ch := make(chan result, len(m.pools))
 	for node, pool := range m.pools {
 		go func(node int, pool redis.Pool) {
-			r := result{Node: node}
-			r.Status, r.Err = actFn(pool)
+			r := result{node: node}
+			r.statusOK, r.err = actFn(pool)
 			ch <- r
 		}(node, pool)
 	}
-	n := 0
-	var taken []int
-	var err error
+
+	var (
+		n     = 0
+		taken []int
+		err   error
+	)
+
 	for range m.pools {
 		r := <-ch
-		if r.Status {
+		if r.statusOK {
 			n++
-		} else if r.Err != nil {
-			err = multierror.Append(err, &RedisError{Node: r.Node, Err: r.Err})
+		} else if r.err == ErrLockAlreadyExpired {
+			err = multierror.Append(err, ErrLockAlreadyExpired)
+		} else if r.err != nil {
+			err = multierror.Append(err, &RedisError{Node: r.node, Err: r.err})
 		} else {
-			taken = append(taken, r.Node)
-			err = multierror.Append(err, &ErrNodeTaken{Node: r.Node})
+			taken = append(taken, r.node)
+			err = multierror.Append(err, &ErrNodeTaken{Node: r.node})
+		}
+
+		if m.failFast {
+			// fast retrun
+			if n >= m.quorum {
+				return n, err
+			}
+
+			// fail fast
+			if len(taken) >= m.quorum {
+				return n, &ErrTaken{Nodes: taken}
+			}
 		}
 	}
 

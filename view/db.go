@@ -3,6 +3,7 @@ package view
 import (
 	"bufio"
 	"bytes"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"github.com/hulutech-web/goravel-tinker/symbols"
@@ -17,6 +18,9 @@ import (
 	"strings"
 	"time"
 )
+
+//go:embed funcs/db/db.go
+var dbFileContent string
 
 func StartYaegiDatabase() {
 	//睡500ms
@@ -38,7 +42,7 @@ func StartYaegiDatabase() {
 	i.Use(symbols.Symbols)
 	fmt.Println("Entering Yaegi REPL. Type your Go code below (type 'exit' or 'quit' to return to menu):")
 	fmt.Println("----------------------------------------  input command to start !-------------------------------------")
-	pflag.String("db", "./funcs/db/db.go", "db file path")
+	pflag.String("db", dbFileContent, "db file path")
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		panic(err)
 	}

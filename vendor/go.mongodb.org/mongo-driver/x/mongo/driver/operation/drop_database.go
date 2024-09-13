@@ -11,6 +11,7 @@ import (
 	"errors"
 
 	"go.mongodb.org/mongo-driver/event"
+	"go.mongodb.org/mongo-driver/internal/driverutil"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
@@ -23,7 +24,7 @@ type DropDatabase struct {
 	session      *session.Client
 	clock        *session.ClusterClock
 	monitor      *event.CommandMonitor
-	crypt        *driver.Crypt
+	crypt        driver.Crypt
 	database     string
 	deployment   driver.Deployment
 	selector     description.ServerSelector
@@ -36,7 +37,7 @@ func NewDropDatabase() *DropDatabase {
 	return &DropDatabase{}
 }
 
-// Execute runs this operations and returns an error if the operaiton did not execute successfully.
+// Execute runs this operations and returns an error if the operation did not execute successfully.
 func (dd *DropDatabase) Execute(ctx context.Context) error {
 	if dd.deployment == nil {
 		return errors.New("the DropDatabase operation must have a Deployment set before Execute can be called")
@@ -53,11 +54,12 @@ func (dd *DropDatabase) Execute(ctx context.Context) error {
 		Selector:       dd.selector,
 		WriteConcern:   dd.writeConcern,
 		ServerAPI:      dd.serverAPI,
-	}.Execute(ctx, nil)
+		Name:           driverutil.DropDatabaseOp,
+	}.Execute(ctx)
 
 }
 
-func (dd *DropDatabase) command(dst []byte, desc description.SelectedServer) ([]byte, error) {
+func (dd *DropDatabase) command(dst []byte, _ description.SelectedServer) ([]byte, error) {
 
 	dst = bsoncore.AppendInt32Element(dst, "dropDatabase", 1)
 	return dst, nil
@@ -94,7 +96,7 @@ func (dd *DropDatabase) CommandMonitor(monitor *event.CommandMonitor) *DropDatab
 }
 
 // Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (dd *DropDatabase) Crypt(crypt *driver.Crypt) *DropDatabase {
+func (dd *DropDatabase) Crypt(crypt driver.Crypt) *DropDatabase {
 	if dd == nil {
 		dd = new(DropDatabase)
 	}

@@ -9,9 +9,11 @@ package operation
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/event"
+	"go.mongodb.org/mongo-driver/internal/driverutil"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -21,7 +23,7 @@ import (
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
-// Performs an aggregate operation
+// Aggregate represents an aggregate operation.
 type Aggregate struct {
 	allowDiskUse             *bool
 	batchSize                *int32
@@ -29,7 +31,7 @@ type Aggregate struct {
 	collation                bsoncore.Document
 	comment                  *string
 	hint                     bsoncore.Value
-	maxTimeMS                *int64
+	maxTime                  *time.Duration
 	pipeline                 bsoncore.Document
 	session                  *session.Client
 	clock                    *session.ClusterClock
@@ -42,9 +44,13 @@ type Aggregate struct {
 	retry                    *driver.RetryMode
 	selector                 description.ServerSelector
 	writeConcern             *writeconcern.WriteConcern
-	crypt                    *driver.Crypt
+	crypt                    driver.Crypt
 	serverAPI                *driver.ServerAPIOptions
 	let                      bsoncore.Document
+	hasOutputStage           bool
+	customOptions            map[string]bsoncore.Value
+	timeout                  *time.Duration
+	omitCSOTMaxTimeMS        bool
 
 	result driver.CursorResponse
 }
@@ -66,6 +72,8 @@ func (a *Aggregate) Result(opts driver.CursorOptions) (*driver.BatchCursor, erro
 	return driver.NewBatchCursor(a.result, clientSession, clock, opts)
 }
 
+// ResultCursorResponse returns the underlying CursorResponse result of executing this
+// operation.
 func (a *Aggregate) ResultCursorResponse() driver.CursorResponse {
 	return a.result
 }
@@ -78,7 +86,7 @@ func (a *Aggregate) processResponse(info driver.ResponseInfo) error {
 
 }
 
-// Execute runs this operations and returns an error if the operaiton did not execute successfully.
+// Execute runs this operations and returns an error if the operation did not execute successfully.
 func (a *Aggregate) Execute(ctx context.Context) error {
 	if a.deployment == nil {
 		return errors.New("the Aggregate operation must have a Deployment set before Execute can be called")
@@ -102,7 +110,12 @@ func (a *Aggregate) Execute(ctx context.Context) error {
 		Crypt:                          a.crypt,
 		MinimumWriteConcernWireVersion: 5,
 		ServerAPI:                      a.serverAPI,
-	}.Execute(ctx, nil)
+		IsOutputAggregate:              a.hasOutputStage,
+		MaxTime:                        a.maxTime,
+		Timeout:                        a.timeout,
+		Name:                           driverutil.AggregateOp,
+		OmitCSOTMaxTimeMS:              a.omitCSOTMaxTimeMS,
+	}.Execute(ctx)
 
 }
 
@@ -140,16 +153,15 @@ func (a *Aggregate) command(dst []byte, desc description.SelectedServer) ([]byte
 
 		dst = bsoncore.AppendValueElement(dst, "hint", a.hint)
 	}
-	if a.maxTimeMS != nil {
-
-		dst = bsoncore.AppendInt64Element(dst, "maxTimeMS", *a.maxTimeMS)
-	}
 	if a.pipeline != nil {
 
 		dst = bsoncore.AppendArrayElement(dst, "pipeline", a.pipeline)
 	}
 	if a.let != nil {
 		dst = bsoncore.AppendDocumentElement(dst, "let", a.let)
+	}
+	for optionName, optionValue := range a.customOptions {
+		dst = bsoncore.AppendValueElement(dst, optionName, optionValue)
 	}
 	cursorDoc, _ = bsoncore.AppendDocumentEnd(cursorDoc, cursorIdx)
 	dst = bsoncore.AppendDocumentElement(dst, "cursor", cursorDoc)
@@ -217,13 +229,13 @@ func (a *Aggregate) Hint(hint bsoncore.Value) *Aggregate {
 	return a
 }
 
-// MaxTimeMS specifies the maximum amount of time to allow the query to run.
-func (a *Aggregate) MaxTimeMS(maxTimeMS int64) *Aggregate {
+// MaxTime specifies the maximum amount of time to allow the query to run on the server.
+func (a *Aggregate) MaxTime(maxTime *time.Duration) *Aggregate {
 	if a == nil {
 		a = new(Aggregate)
 	}
 
-	a.maxTimeMS = &maxTimeMS
+	a.maxTime = maxTime
 	return a
 }
 
@@ -307,7 +319,7 @@ func (a *Aggregate) ReadConcern(readConcern *readconcern.ReadConcern) *Aggregate
 	return a
 }
 
-// ReadPreference set the read prefernce used with this operation.
+// ReadPreference set the read preference used with this operation.
 func (a *Aggregate) ReadPreference(readPreference *readpref.ReadPref) *Aggregate {
 	if a == nil {
 		a = new(Aggregate)
@@ -350,7 +362,7 @@ func (a *Aggregate) Retry(retry driver.RetryMode) *Aggregate {
 }
 
 // Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (a *Aggregate) Crypt(crypt *driver.Crypt) *Aggregate {
+func (a *Aggregate) Crypt(crypt driver.Crypt) *Aggregate {
 	if a == nil {
 		a = new(Aggregate)
 	}
@@ -376,5 +388,48 @@ func (a *Aggregate) Let(let bsoncore.Document) *Aggregate {
 	}
 
 	a.let = let
+	return a
+}
+
+// HasOutputStage specifies whether the aggregate contains an output stage. Used in determining when to
+// append read preference at the operation level.
+func (a *Aggregate) HasOutputStage(hos bool) *Aggregate {
+	if a == nil {
+		a = new(Aggregate)
+	}
+
+	a.hasOutputStage = hos
+	return a
+}
+
+// CustomOptions specifies extra options to use in the aggregate command.
+func (a *Aggregate) CustomOptions(co map[string]bsoncore.Value) *Aggregate {
+	if a == nil {
+		a = new(Aggregate)
+	}
+
+	a.customOptions = co
+	return a
+}
+
+// Timeout sets the timeout for this operation.
+func (a *Aggregate) Timeout(timeout *time.Duration) *Aggregate {
+	if a == nil {
+		a = new(Aggregate)
+	}
+
+	a.timeout = timeout
+	return a
+}
+
+// OmitCSOTMaxTimeMS omits the automatically-calculated "maxTimeMS" from the
+// command when CSOT is enabled. It does not effect "maxTimeMS" set by
+// [Aggregate.MaxTime].
+func (a *Aggregate) OmitCSOTMaxTimeMS(omit bool) *Aggregate {
+	if a == nil {
+		a = new(Aggregate)
+	}
+
+	a.omitCSOTMaxTimeMS = omit
 	return a
 }

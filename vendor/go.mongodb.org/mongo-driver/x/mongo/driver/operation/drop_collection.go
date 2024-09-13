@@ -10,8 +10,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/event"
+	"go.mongodb.org/mongo-driver/internal/driverutil"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
@@ -25,15 +27,17 @@ type DropCollection struct {
 	clock        *session.ClusterClock
 	collection   string
 	monitor      *event.CommandMonitor
-	crypt        *driver.Crypt
+	crypt        driver.Crypt
 	database     string
 	deployment   driver.Deployment
 	selector     description.ServerSelector
 	writeConcern *writeconcern.WriteConcern
 	result       DropCollectionResult
 	serverAPI    *driver.ServerAPIOptions
+	timeout      *time.Duration
 }
 
+// DropCollectionResult represents a dropCollection result returned by the server.
 type DropCollectionResult struct {
 	// The number of indexes in the dropped collection.
 	NIndexesWas int32
@@ -41,7 +45,7 @@ type DropCollectionResult struct {
 	Ns string
 }
 
-func buildDropCollectionResult(response bsoncore.Document, srvr driver.Server) (DropCollectionResult, error) {
+func buildDropCollectionResult(response bsoncore.Document) (DropCollectionResult, error) {
 	elements, err := response.Elements()
 	if err != nil {
 		return DropCollectionResult{}, err
@@ -76,11 +80,11 @@ func (dc *DropCollection) Result() DropCollectionResult { return dc.result }
 
 func (dc *DropCollection) processResponse(info driver.ResponseInfo) error {
 	var err error
-	dc.result, err = buildDropCollectionResult(info.ServerResponse, info.Server)
+	dc.result, err = buildDropCollectionResult(info.ServerResponse)
 	return err
 }
 
-// Execute runs this operations and returns an error if the operaiton did not execute successfully.
+// Execute runs this operations and returns an error if the operation did not execute successfully.
 func (dc *DropCollection) Execute(ctx context.Context) error {
 	if dc.deployment == nil {
 		return errors.New("the DropCollection operation must have a Deployment set before Execute can be called")
@@ -98,11 +102,13 @@ func (dc *DropCollection) Execute(ctx context.Context) error {
 		Selector:          dc.selector,
 		WriteConcern:      dc.writeConcern,
 		ServerAPI:         dc.serverAPI,
-	}.Execute(ctx, nil)
+		Timeout:           dc.timeout,
+		Name:              driverutil.DropOp,
+	}.Execute(ctx)
 
 }
 
-func (dc *DropCollection) command(dst []byte, desc description.SelectedServer) ([]byte, error) {
+func (dc *DropCollection) command(dst []byte, _ description.SelectedServer) ([]byte, error) {
 	dst = bsoncore.AppendStringElement(dst, "drop", dc.collection)
 	return dst, nil
 }
@@ -148,7 +154,7 @@ func (dc *DropCollection) CommandMonitor(monitor *event.CommandMonitor) *DropCol
 }
 
 // Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (dc *DropCollection) Crypt(crypt *driver.Crypt) *DropCollection {
+func (dc *DropCollection) Crypt(crypt driver.Crypt) *DropCollection {
 	if dc == nil {
 		dc = new(DropCollection)
 	}
@@ -204,5 +210,15 @@ func (dc *DropCollection) ServerAPI(serverAPI *driver.ServerAPIOptions) *DropCol
 	}
 
 	dc.serverAPI = serverAPI
+	return dc
+}
+
+// Timeout sets the timeout for this operation.
+func (dc *DropCollection) Timeout(timeout *time.Duration) *DropCollection {
+	if dc == nil {
+		dc = new(DropCollection)
+	}
+
+	dc.timeout = timeout
 	return dc
 }

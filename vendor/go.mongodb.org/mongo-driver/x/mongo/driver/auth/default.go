@@ -9,8 +9,6 @@ package auth
 import (
 	"context"
 	"fmt"
-
-	"go.mongodb.org/mongo-driver/mongo/description"
 )
 
 func newDefaultAuthenticator(cred *Cred) (Authenticator, error) {
@@ -36,7 +34,7 @@ type DefaultAuthenticator struct {
 	Cred *Cred
 
 	// The authenticator to use for speculative authentication. Because the correct auth mechanism is unknown when doing
-	// the initial isMaster, SCRAM-SHA-256 is used for the speculative attempt.
+	// the initial hello, SCRAM-SHA-256 is used for the speculative attempt.
 	speculativeAuthenticator SpeculativeAuthenticator
 }
 
@@ -78,21 +76,7 @@ func chooseAuthMechanism(cfg *Config) string {
 				return v
 			}
 		}
-		return SCRAMSHA1
 	}
 
-	if err := scramSHA1Supported(cfg.HandshakeInfo.Description.WireVersion); err == nil {
-		return SCRAMSHA1
-	}
-
-	return MONGODBCR
-}
-
-// scramSHA1Supported returns an error if the given server version does not support scram-sha-1.
-func scramSHA1Supported(wireVersion *description.VersionRange) error {
-	if wireVersion != nil && wireVersion.Max < 3 {
-		return fmt.Errorf("SCRAM-SHA-1 is only supported for servers 3.0 or newer")
-	}
-
-	return nil
+	return SCRAMSHA1
 }

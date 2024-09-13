@@ -73,7 +73,7 @@ func (sc *saslConversation) FirstMessage() (bsoncore.Document, error) {
 		bsoncore.AppendBinaryElement(nil, "payload", 0x00, payload),
 	}
 	if sc.speculative {
-		// The "db" field is only appended for speculative auth because the isMaster command is executed against admin
+		// The "db" field is only appended for speculative auth because the hello command is executed against admin
 		// so this is needed to tell the server the user's auth source. For a non-speculative attempt, the SASL commands
 		// will be executed against the auth source.
 		saslCmdElements = append(saslCmdElements, bsoncore.AppendStringElement(nil, "db", sc.source))
@@ -102,7 +102,7 @@ func (sc *saslConversation) Finish(ctx context.Context, cfg *Config, firstRespon
 	var saslResp saslResponse
 	err := bson.Unmarshal(firstResponse, &saslResp)
 	if err != nil {
-		fullErr := fmt.Errorf("unmarshal error: %v", err)
+		fullErr := fmt.Errorf("unmarshal error: %w", err)
 		return newError(fullErr, sc.mechanism)
 	}
 
@@ -146,7 +146,7 @@ func (sc *saslConversation) Finish(ctx context.Context, cfg *Config, firstRespon
 
 		err = bson.Unmarshal(rdr, &saslResp)
 		if err != nil {
-			fullErr := fmt.Errorf("unmarshal error: %v", err)
+			fullErr := fmt.Errorf("unmarshal error: %w", err)
 			return newError(fullErr, sc.mechanism)
 		}
 	}

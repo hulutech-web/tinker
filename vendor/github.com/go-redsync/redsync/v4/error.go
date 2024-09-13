@@ -13,6 +13,9 @@ var ErrFailed = errors.New("redsync: failed to acquire lock")
 // lock.
 var ErrExtendFailed = errors.New("redsync: failed to extend lock")
 
+// ErrLockAlreadyExpired is the error resulting if trying to unlock the lock which already expired.
+var ErrLockAlreadyExpired = errors.New("redsync: failed to unlock, lock was already expired")
+
 // ErrTaken happens when the lock is already taken in a quorum on nodes.
 type ErrTaken struct {
 	Nodes []int
@@ -38,6 +41,10 @@ type RedisError struct {
 	Err  error
 }
 
-func (err RedisError) Error() string {
-	return fmt.Sprintf("node #%d: %s", err.Node, err.Err)
+func (e RedisError) Error() string {
+	return fmt.Sprintf("node #%d: %s", e.Node, e.Err)
+}
+
+func (e RedisError) Unwrap() error {
+	return e.Err
 }
