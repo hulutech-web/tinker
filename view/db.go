@@ -3,7 +3,6 @@ package view
 import (
 	"bufio"
 	"bytes"
-	_ "embed"
 	"encoding/json"
 	"fmt"
 	tinker "github.com/hulutech-web/goravel-tinker"
