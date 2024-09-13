@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"crypto/sha256"
-	_ "embed"
 	"encoding/hex"
 	"fmt"
 	"github.com/goravel/framework/support/path"
@@ -27,9 +26,6 @@ import (
 	"sync"
 	"time"
 )
-
-//go:embed funcs/db/query.go
-var queryFileContent string
 
 type Engine struct {
 	handle func(str string) string
@@ -170,7 +166,7 @@ func Rebuild() {
 
 	// 定义要执行的命令（`make`）和目标（`all`）
 	cmd := exec.Command("make", "all")
-	cmd.Dir = "/" // 设置工作目录为包含 Makefile 的目录
+	cmd.Dir = "packages/tinker" // 设置工作目录为包含 Makefile 的目录
 
 	// 执行命令并获取输出
 	output, err := cmd.CombinedOutput()
@@ -253,7 +249,7 @@ func StartYaegiModel() {
 	i.Use(stdlib.Symbols)
 	//导入自定义的符号
 	i.Use(symbols.Symbols)
-	pflag.String("query", queryFileContent, "query file path")
+	pflag.String("query", "./funcs/query/query.go", "query file path")
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		panic(err)
 	}

@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	tinker "github.com/hulutech-web/goravel-tinker"
 	"github.com/hulutech-web/goravel-tinker/symbols"
 	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
@@ -19,10 +20,9 @@ import (
 	"time"
 )
 
-//go:embed funcs/db/db.go
-var dbFileContent string
-
 func StartYaegiDatabase() {
+
+	dbFileContent := tinker.GetDBFileContent()
 	//睡500ms
 	time.Sleep(500 * time.Millisecond)
 	//执行os清屏，执行exec.Command clear指令
