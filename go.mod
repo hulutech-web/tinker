@@ -1,4 +1,4 @@
-module goravel-tinker
+module github.com/hulutech-web/goravel-tinker
 
 go 1.22.5
 
