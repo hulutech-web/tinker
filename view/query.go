@@ -249,7 +249,7 @@ func StartYaegiModel() {
 	i.Use(stdlib.Symbols)
 	//导入自定义的符号
 	i.Use(symbols.Symbols)
-	pflag.String("query", "./packages/tinker/funcs/query/query.go", "query file path")
+	pflag.String("query", "./funcs/query/query.go", "query file path")
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		panic(err)
 	}

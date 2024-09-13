@@ -38,7 +38,7 @@ func StartYaegiDatabase() {
 	i.Use(symbols.Symbols)
 	fmt.Println("Entering Yaegi REPL. Type your Go code below (type 'exit' or 'quit' to return to menu):")
 	fmt.Println("----------------------------------------  input command to start !-------------------------------------")
-	pflag.String("db", "./packages/tinker/funcs/db/db.go", "db file path")
+	pflag.String("db", "./funcs/db/db.go", "db file path")
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		panic(err)
 	}
