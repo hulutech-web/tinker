@@ -3,11 +3,11 @@ package view
 import (
 	"bufio"
 	"fmt"
+	"github.com/hulutech-web/goravel-tinker/symbols"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
-	"goravel-tinker/symbols"
 	"os"
 	"os/exec"
 	"strings"

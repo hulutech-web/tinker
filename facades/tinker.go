@@ -1,8 +1,8 @@
 package facades
 
 import (
-	tinker "goravel-tinker"
-	"goravel-tinker/contracts"
+	tinker "github.com/hulutech-web/goravel-tinker"
+	"github.com/hulutech-web/goravel-tinker/contracts"
 	"log"
 )
 
