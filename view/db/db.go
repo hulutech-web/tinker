@@ -1,4 +1,4 @@
-package view
+package db
 
 import (
 	"bufio"
@@ -122,4 +122,17 @@ func PrettyPrint(v interface{}) {
 	}
 	pterm.NewRGB(219, 155, 52).Println(out.String())
 
+}
+
+func beatifyPrint(input string) {
+	startColor := pterm.NewRGB(0, 136, 94) // 蓝色
+	endColor := pterm.NewRGB(67, 53, 255)  // 红色
+
+	str := "Tinker> "
+	strs := []rune(str)
+
+	for i := 0; i < len(strs); i++ {
+		color := startColor.Fade(0, float32(len(strs)), float32(i), endColor)
+		color.Print(string(strs[i]))
+	}
 }

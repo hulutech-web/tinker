@@ -1,4 +1,4 @@
-package view
+package query
 
 import (
 	"bufio"
@@ -11,6 +11,7 @@ import (
 	"github.com/hulutech-web/goravel-tinker/styles"
 	"github.com/hulutech-web/goravel-tinker/symbols"
 	"github.com/pkg/errors"
+	"github.com/pterm/pterm"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -341,4 +342,17 @@ func StartYaegiModel() {
 // RotatingSpinner 实现旋转效果的函数
 func Rotating(stop chan struct{}) {
 	go styles.Rotating(stop)
+}
+
+func beatifyPrint(input string) {
+	startColor := pterm.NewRGB(0, 136, 94) // 蓝色
+	endColor := pterm.NewRGB(67, 53, 255)  // 红色
+
+	str := "Tinker> "
+	strs := []rune(str)
+
+	for i := 0; i < len(strs); i++ {
+		color := startColor.Fade(0, float32(len(strs)), float32(i), endColor)
+		color.Print(string(strs[i]))
+	}
 }

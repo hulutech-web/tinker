@@ -1,9 +1,10 @@
-package view
+package cache
 
 import (
 	"bufio"
 	"fmt"
 	"github.com/hulutech-web/goravel-tinker/symbols"
+	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/traefik/yaegi/interp"
@@ -71,5 +72,17 @@ func StartYaegiCache() {
 			// 输出结果
 			fmt.Printf("Result: %v\n", res)
 		}
+	}
+}
+func beatifyPrint(input string) {
+	startColor := pterm.NewRGB(0, 136, 94) // 蓝色
+	endColor := pterm.NewRGB(67, 53, 255)  // 红色
+
+	str := "Tinker> "
+	strs := []rune(str)
+
+	for i := 0; i < len(strs); i++ {
+		color := startColor.Fade(0, float32(len(strs)), float32(i), endColor)
+		color.Print(string(strs[i]))
 	}
 }

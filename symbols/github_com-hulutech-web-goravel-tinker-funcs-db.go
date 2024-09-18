@@ -10,17 +10,9 @@ import (
 func init() {
 	Symbols["github.com/hulutech-web/goravel-tinker/funcs/db/db"] = map[string]reflect.Value{
 		// function, constant and variable definitions
-		"BootMS":        reflect.ValueOf(db.BootMS),
-		"Clear":         reflect.ValueOf(db.Clear),
-		"DB":            reflect.ValueOf(db.DB),
-		"Find":          reflect.ValueOf(db.Find),
-		"Take":          reflect.ValueOf(db.Take),
-		"WhereBetween":  reflect.ValueOf(db.WhereBetween),
-		"WhereIn":       reflect.ValueOf(db.WhereIn),
-		"WhereLike":     reflect.ValueOf(db.WhereLike),
-		"WhereMap":      reflect.ValueOf(db.WhereMap),
-		"WhereNot":      reflect.ValueOf(db.WhereNot),
-		"WhereNotEqual": reflect.ValueOf(db.WhereNotEqual),
+		"BootMS": reflect.ValueOf(db.BootMS),
+		"Clear":  reflect.ValueOf(db.Clear),
+		"DB":     reflect.ValueOf(db.DB),
 
 		// type definitions
 		"Gorm": reflect.ValueOf((*db.Gorm)(nil)),

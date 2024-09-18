@@ -1,5 +1,5 @@
-package view
+package auth
 
 func StartYaegiAuth() {
-	
+
 }
