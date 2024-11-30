@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/hulutech-web/goravel-tinker/view/cache"
 	"github.com/hulutech-web/goravel-tinker/view/command"
-	"github.com/hulutech-web/goravel-tinker/view/query"
+	"github.com/hulutech-web/goravel-tinker/view/db"
 	"github.com/pterm/pterm"
 	"os"
 	"os/exec"
@@ -106,7 +106,7 @@ func Call() {
 	}
 	switch selectedOption {
 	case "1":
-		query.StartYaegiModel()
+		db.StartYaegiDatabase()
 	case "2":
 		cache.StartYaegiCache()
 	case "3":
@@ -153,6 +153,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 				case "4":
 					selectedOption = "4"
+
+					return m, tea.Quit
+				case "5":
+					selectedOption = "5"
 
 					return m, tea.Quit
 				default:

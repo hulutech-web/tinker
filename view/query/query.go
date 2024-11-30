@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/goravel/framework/support/path"
-	tinker "github.com/hulutech-web/goravel-tinker"
+	"github.com/hulutech-web/goravel-tinker/contracts"
 	"github.com/hulutech-web/goravel-tinker/styles"
 	"github.com/hulutech-web/goravel-tinker/symbols"
 	"github.com/pkg/errors"
@@ -231,7 +231,8 @@ func StartYaegiModel() {
 	//观察models目录下文件的变化
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	queryfile := tinker.GetQueryFileContent()
+	var baseTinker contracts.Tinker
+	queryfile := baseTinker.GetQueryFileContent()
 	pflag.String("model", queryfile, "model file path")
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {

@@ -1,7 +1,6 @@
 package tinker
 
 import (
-	"github.com/traefik/yaegi/interp"
 	"testing"
 )
 
@@ -18,9 +17,11 @@ func TestNewTinker(t *testing.T) {
 	if tinkerInstance.interpreter == nil {
 		t.Errorf("NewTinker() returned a Tinker instance with a nil interpreter")
 	}
+}
 
-	// 检查Tinker实例的interpreter字段是否为interp.New()的返回值
-	if tinkerInstance.interpreter != interp.New(interp.Options{}) {
-		t.Errorf("NewTinker() returned a Tinker instance with a different interpreter")
-	}
+func TestCall(t *testing.T) {
+	// 创建一个新的Tinker实例
+	tinkerInstance := NewTinker()
+	//调用Call方法
+	tinkerInstance.Call()
 }

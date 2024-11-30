@@ -3,7 +3,7 @@ package commands
 import (
 	"github.com/goravel/framework/contracts/console"
 	"github.com/goravel/framework/contracts/console/command"
-	"github.com/hulutech-web/goravel-tinker/view"
+	"github.com/hulutech-web/goravel-tinker/contracts"
 )
 
 type Tinker struct{}
@@ -29,6 +29,7 @@ func (receiver *Tinker) Extend() command.Extend {
 
 // Handle Execute the console command.
 func (receiver *Tinker) Handle(ctx console.Context) error {
-	view.Call()
+	var baseTinker contracts.Tinker
+	baseTinker.Call()
 	return nil
 }

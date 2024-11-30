@@ -1,6 +1,9 @@
 package tinker
 
-import "github.com/traefik/yaegi/interp"
+import (
+	"github.com/hulutech-web/goravel-tinker/view"
+	"github.com/traefik/yaegi/interp"
+)
 
 import (
 	_ "embed"
@@ -16,6 +19,10 @@ func NewTinker() *Tinker {
 	}
 }
 
+func (T *Tinker) Call() {
+	view.Call()
+}
+
 // 嵌入 db.go 文件
 //
 //go:embed funcs/db/db.go
@@ -27,10 +34,10 @@ var DBFileContent string
 var QueryFileContent string
 
 // 导出一个函数，供外部调用
-func GetDBFileContent() string {
+func (T *Tinker) GetDBFileContent() string {
 	return DBFileContent
 }
 
-func GetQueryFileContent() string {
+func (T *Tinker) GetQueryFileContent() string {
 	return QueryFileContent
 }
