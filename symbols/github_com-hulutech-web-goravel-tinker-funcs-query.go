@@ -10,26 +10,7 @@ import (
 func init() {
 	Symbols["github.com/hulutech-web/goravel-tinker/funcs/query/query"] = map[string]reflect.Value{
 		// function, constant and variable definitions
-		"BootMS":   reflect.ValueOf(query.BootMS),
-		"Clear":    reflect.ValueOf(query.Clear),
-		"Create":   reflect.ValueOf(query.Create),
-		"DB":       reflect.ValueOf(query.DB),
-		"Distinct": reflect.ValueOf(query.Distinct),
-		"Find":     reflect.ValueOf(query.Find),
-		"First":    reflect.ValueOf(query.First),
-		"Group":    reflect.ValueOf(query.Group),
-		"Joins":    reflect.ValueOf(query.Joins),
-		"Last":     reflect.ValueOf(query.Last),
-		"Limit":    reflect.ValueOf(query.Limit),
-		"Model":    reflect.ValueOf(query.Model),
-		"Or":       reflect.ValueOf(query.Or),
-		"Order":    reflect.ValueOf(query.Order),
-		"Scan":     reflect.ValueOf(query.Scan),
-		"Select":   reflect.ValueOf(query.Select),
-		"Take":     reflect.ValueOf(query.Take),
-		"Where":    reflect.ValueOf(query.Where),
-
-		// type definitions
-		"Gorm": reflect.ValueOf((*query.Gorm)(nil)),
+		"BootMS": reflect.ValueOf(query.BootMS),
+		"Clear":  reflect.ValueOf(query.Clear),
 	}
 }

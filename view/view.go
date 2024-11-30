@@ -6,6 +6,9 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/hulutech-web/goravel-tinker/view/cache"
+	"github.com/hulutech-web/goravel-tinker/view/command"
+	"github.com/hulutech-web/goravel-tinker/view/db"
 	"github.com/pterm/pterm"
 	"os"
 	"os/exec"
@@ -103,11 +106,11 @@ func Call() {
 	}
 	switch selectedOption {
 	case "1":
-		StartYaegiDatabase()
+		db.StartYaegiDatabase()
 	case "2":
-		StartYaegiCache()
+		cache.StartYaegiCache()
 	case "3":
-		StartYaegiCommand()
+		command.StartYaegiCommand()
 	case "4":
 		startYaegiShebang()
 	}
