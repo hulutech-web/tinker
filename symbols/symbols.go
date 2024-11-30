@@ -3,7 +3,6 @@
 //go:generate yaegi extract gorm.io/driver/mysql
 //go:generate yaegi extract gorm.io/gorm
 //go:generate yaegi extract gorm.io/gorm/logger
-//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/auth
 //go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/cache
 //go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/command
 //go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/db

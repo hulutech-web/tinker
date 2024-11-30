@@ -2,7 +2,7 @@ package tinker
 
 import (
 	"fmt"
-	"goravel-tinker/app/models"
+	"github.com/hulutech-web/goravel-tinker/app/models"
 	"testing"
 )
 
