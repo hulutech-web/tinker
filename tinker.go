@@ -1,8 +1,9 @@
 package tinker
 
+import "github.com/traefik/yaegi/interp"
+
 import (
 	_ "embed"
-	"github.com/traefik/yaegi/interp"
 )
 
 type Tinker struct {
