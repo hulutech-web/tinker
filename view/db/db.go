@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hulutech-web/goravel-tinker/contracts"
+	tinker "github.com/hulutech-web/goravel-tinker"
 	"github.com/hulutech-web/goravel-tinker/symbols"
 	"github.com/pterm/pterm"
 	"github.com/spf13/pflag"
@@ -20,8 +20,8 @@ import (
 )
 
 func StartYaegiDatabase() {
-	var baseTinker contracts.Tinker
-	dbFileContent := baseTinker.GetDBFileContent()
+	t := tinker.NewTinker()
+	dbFileContent := t.GetDBFileContent()
 	//睡500ms
 	time.Sleep(500 * time.Millisecond)
 	//执行os清屏，执行exec.Command clear指令
