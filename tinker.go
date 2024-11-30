@@ -1,7 +1,7 @@
 package tinker
 
 import (
-	"github.com/hulutech-web/goravel-tinker/view"
+	"github.com/hulutech-web/goravel-tinker/internal/executor"
 	"github.com/traefik/yaegi/interp"
 )
 
@@ -19,8 +19,8 @@ func NewTinker() *Tinker {
 	}
 }
 
-func (T *Tinker) Call() {
-	view.Call()
+func (T *Tinker) Call() error {
+	return executor.Call()
 }
 
 // 嵌入 db.go 文件

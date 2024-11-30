@@ -1,4 +1,4 @@
-package view
+package executor
 
 import (
 	"bufio"
@@ -94,7 +94,7 @@ func NewModel() Model {
 	}
 }
 
-func Call() {
+func Call() error {
 	// Initialize the model
 	m := NewModel()
 	// Create and run the Bubble Tea program
@@ -114,6 +114,7 @@ func Call() {
 	case "4":
 		startYaegiShebang()
 	}
+	return nil
 }
 
 func startYaegiShebang() {
