@@ -4,10 +4,10 @@
 //go:generate yaegi extract gorm.io/driver/mysql
 //go:generate yaegi extract gorm.io/gorm
 //go:generate yaegi extract gorm.io/gorm/logger
-//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/cache
-//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/command
-//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/db
-//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/funcs/query
+//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/view/auth
+//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/views/cache
+//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/views/command
+//go:generate yaegi extract github.com/hulutech-web/goravel-tinker/views/query
 
 package symbols
 

@@ -2,20 +2,30 @@ package cache
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"github.com/hulutech-web/goravel-tinker/symbols"
 	"github.com/pterm/pterm"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
 
 func StartYaegiCache() {
+
+	_, currentFilePath, _, _ := runtime.Caller(0)
+
+	// 设置默认配置文件路径
+	defaultConfigFile := filepath.Join(currentFilePath, "stream.go")
+	// 命令行参数
+	configFile := flag.String("c", defaultConfigFile, "Path to the configuration file")
+	flag.Parse()
+
 	//睡500ms
 	time.Sleep(500 * time.Millisecond)
 	//执行os清屏，执行exec.Command clear指令
@@ -35,16 +45,8 @@ func StartYaegiCache() {
 	i.Use(symbols.Symbols)
 	fmt.Println("Entering Yaegi REPL. Type your Go code below (type 'exit' or 'quit' to return to menu):")
 	fmt.Println("----------------------------------------  input command to start !-------------------------------------")
-	pflag.String("cache", "./packages/tinker/funcs/cache/cache.go", "cache file path")
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		panic(err)
-	}
-	pflag.Parse()
-	file, err2 := os.ReadFile(viper.GetString("cache"))
-	if err2 != nil {
-		fmt.Println("Error reading cache file:", err2)
-	}
-	_, err3 := i.Eval(string(file))
+
+	_, err3 := i.Eval(*configFile)
 	if err3 != nil {
 		fmt.Println("Error evaluating expression:", err3)
 		panic(err3)

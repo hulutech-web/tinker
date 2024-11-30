@@ -22,22 +22,3 @@ func NewTinker() *Tinker {
 func (T *Tinker) Call() error {
 	return executor.Call()
 }
-
-// 嵌入 db.go 文件
-//
-//go:embed funcs/db/db.go
-var DBFileContent string
-
-// 嵌入 query.go 文件
-//
-//go:embed funcs/query/query.go
-var QueryFileContent string
-
-// 导出一个函数，供外部调用
-func (T *Tinker) GetDBFileContent() string {
-	return DBFileContent
-}
-
-func (T *Tinker) GetQueryFileContent() string {
-	return QueryFileContent
-}
