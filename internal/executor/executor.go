@@ -1,7 +1,6 @@
 package executor
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -10,10 +9,9 @@ import (
 	"github.com/hulutech-web/goravel-tinker/view/command"
 	"github.com/hulutech-web/goravel-tinker/view/db"
 	"github.com/hulutech-web/goravel-tinker/view/query"
-	"github.com/pterm/pterm"
+	"github.com/hulutech-web/goravel-tinker/view/shebang"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 // Define a style for the table
@@ -116,13 +114,9 @@ func Call() error {
 	case "4":
 		command.StartYaegiCommand()
 	case "5":
-		startYaegiShebang()
+		shebang.StartCommandlineMode()
 	}
 	return nil
-}
-
-func startYaegiShebang() {
-	fmt.Println("startYaegiShebang")
 }
 
 // Initialize the model
@@ -188,42 +182,4 @@ func (m Model) View() string {
 
 	// Send the UI for rendering
 	return tableView + "\n\n" + footer
-}
-
-func startCommandlineMode() {
-	fmt.Println("Entering command-line mode. Type your command below (type 'exit' or 'quit' to return to menu):")
-	//执行os命令“yaegi repl”
-	cmd := exec.Command("yaegi")
-	for {
-		reader := bufio.NewReader(os.Stdin)
-		input, _ := reader.ReadString('\n')
-		fmt.Println("你输入的内容是：", input)
-		if input == "exit" || input == "quit" {
-			fmt.Println("Exiting command-line mode. Returning to menu...")
-			break
-		} else {
-			cmd.Stdin = strings.NewReader(input)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err := cmd.Run()
-			if err != nil {
-				fmt.Println("Error executing command:", err)
-			} else {
-				fmt.Println("Command executed successfully.")
-			}
-		}
-
-	}
-}
-func beatifyPrint(input string) {
-	startColor := pterm.NewRGB(0, 136, 94) // 蓝色
-	endColor := pterm.NewRGB(67, 53, 255)  // 红色
-
-	str := "Tinker> "
-	strs := []rune(str)
-
-	for i := 0; i < len(strs); i++ {
-		color := startColor.Fade(0, float32(len(strs)), float32(i), endColor)
-		color.Print(string(strs[i]))
-	}
 }
