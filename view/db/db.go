@@ -4,29 +4,80 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"github.com/hulutech-web/goravel-tinker/symbols"
+	"github.com/hulutech-web/goravel-tinker/symbol"
+	_ "github.com/hulutech-web/symbols/view/db"
 	"github.com/pterm/pterm"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"reflect"
-	"runtime"
 	"strings"
 	"time"
 )
 
-func StartYaegiDatabase() {
-	_, currentFilePath, _, _ := runtime.Caller(0)
+func previewDbStr() string {
+	str := `
 
-	// 设置默认配置文件路径
-	defaultConfigFile := filepath.Join(currentFilePath, "stream.go")
-	// 命令行参数
-	configFile := flag.String("c", defaultConfigFile, "Path to the configuration file")
-	flag.Parse()
+import (
+	"github.com/goravel/framework/database/db"
+	"github.com/goravel/framework/database/gorm"
+	"github.com/goravel/framework/facades"
+	gormio "gorm.io/gorm"
+	"sync"
+)
+
+var (
+	once sync.Once
+)
+
+// 申明一个MYSQL连接GormIns
+var gormIns *gormio.DB
+
+func BootMS() *gormio.DB {
+	once.Do(func() {
+		//临时修改一下
+		facades.Config().Add("app.debug", false)
+		var gormImpl = gorm.NewGormImpl(facades.Config(), "mysql",
+			db.NewConfigImpl(facades.Config(), "mysql"),
+			gorm.NewDialectorImpl(facades.Config(), "mysql"))
+		gormIns, _ = gormImpl.Make()
+		config := facades.Config().Env("APP_DEBUG", false)
+		// 恢复配置
+		facades.Config().Add("app.debug", config)
+	})
+	return gormIns
+}
+
+var result map[string]interface{}
+var results []map[string]interface{}
+
+type Gorm struct {
+	gormIns *gormio.DB
+}
+
+func DB() *gormio.DB {
+	return BootMS()
+}
+
+func _clearResults() {
+	results = []map[string]interface{}{}
+}
+func _clearResult() {
+	result = map[string]interface{}{}
+}
+
+func Clear() {
+	_clearResults()
+	_clearResult()
+}
+
+`
+	return str
+}
+
+func StartYaegiDatabase() {
 	//睡500ms
 	time.Sleep(500 * time.Millisecond)
 	//执行os清屏，执行exec.Command clear指令
@@ -43,10 +94,10 @@ func StartYaegiDatabase() {
 	// 导入标准库
 	i.Use(stdlib.Symbols)
 	//导入自定义的符号
-	i.Use(symbols.Symbols)
+	i.Use(symbol.Symbols)
 	fmt.Println("Entering Yaegi REPL. Type your Go code below (type 'exit' or 'quit' to return to menu):")
 	fmt.Println("----------------------------------------  input command to start !-------------------------------------")
-	_, err3 := i.Eval(*configFile)
+	_, err3 := i.Eval(previewDbStr())
 	if err3 != nil {
 		fmt.Println("Error evaluating expression:", err3)
 		panic(err3)

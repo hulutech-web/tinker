@@ -8,7 +8,8 @@ import (
 	"fmt"
 	"github.com/goravel/framework/support/path"
 	"github.com/hulutech-web/goravel-tinker/styles"
-	"github.com/hulutech-web/goravel-tinker/symbols"
+	"github.com/hulutech-web/goravel-tinker/symbol"
+	_ "github.com/hulutech-web/symbols/view/query"
 	"github.com/pkg/errors"
 	"github.com/pterm/pterm"
 	"github.com/sirupsen/logrus"
@@ -27,6 +28,66 @@ import (
 	"sync"
 	"time"
 )
+
+func previewQueryStr() string {
+	str := `
+
+import (
+	"github.com/goravel/framework/database/db"
+	"github.com/goravel/framework/database/gorm"
+	"github.com/goravel/framework/facades"
+	gormio "gorm.io/gorm"
+	"sync"
+)
+
+var (
+	once sync.Once
+)
+
+// 申明一个MYSQL连接GormIns
+var gormIns *gormio.DB
+
+func BootMS() *gormio.DB {
+	once.Do(func() {
+		//临时修改一下
+		facades.Config().Add("app.debug", false)
+		var gormImpl = gorm.NewGormImpl(facades.Config(), "mysql",
+			db.NewConfigImpl(facades.Config(), "mysql"),
+			gorm.NewDialectorImpl(facades.Config(), "mysql"))
+		gormIns, _ = gormImpl.Make()
+		config := facades.Config().Env("APP_DEBUG", false)
+		// 恢复配置
+		facades.Config().Add("app.debug", config)
+	})
+	return gormIns
+}
+
+var result map[string]interface{}
+var results []map[string]interface{}
+
+type Gorm struct {
+	gormIns *gormio.DB
+}
+
+func DB() *gormio.DB {
+	return BootMS()
+}
+
+func _clearResults() {
+	results = []map[string]interface{}{}
+}
+func _clearResult() {
+	result = map[string]interface{}{}
+}
+
+func Clear() {
+	_clearResults()
+	_clearResult()
+}
+
+`
+	return str
+}
 
 type Engine struct {
 	handle func(str string) string
@@ -124,7 +185,7 @@ func (e *Engine) ReloadModels(ctx context.Context) error {
 	if err := i.Use(stdlib.Symbols); err != nil {
 		return errors.Wrap(err, "failed to use stdlib symbols")
 	}
-	if err := i.Use(symbols.Symbols); err != nil {
+	if err := i.Use(symbol.Symbols); err != nil {
 		return errors.Wrap(err, "failed to use symbol symbols")
 	}
 
@@ -259,17 +320,8 @@ func StartYaegiModel() {
 	// 导入标准库
 	i.Use(stdlib.Symbols)
 	//导入自定义的符号
-	i.Use(symbols.Symbols)
-	pflag.String("query", "./funcs/query/query.go", "query file path")
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		panic(err)
-	}
-	pflag.Parse()
-	file, err2 := os.ReadFile(viper.GetString("query"))
-	if err2 != nil {
-		fmt.Println("Error reading query file:", err2)
-	}
-	_, err3 := i.Eval(string(file))
+	i.Use(symbol.Symbols)
+	_, err3 := i.Eval(previewQueryStr())
 	if err3 != nil {
 		fmt.Println("Error evaluating expression:", err3)
 		panic(err3)

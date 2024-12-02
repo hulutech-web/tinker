@@ -2,30 +2,38 @@ package cache
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
-	"github.com/hulutech-web/goravel-tinker/symbols"
+	"github.com/hulutech-web/goravel-tinker/symbol"
+	_ "github.com/hulutech-web/symbols/view/cache"
 	"github.com/pterm/pterm"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 )
 
+func previewCacheStr() string {
+	str := `
+import "github.com/goravel/framework/facades"
+
+func Store(key string, value string) {
+	facades.Cache().Put(key, value, 0)
+}
+
+func Get(key string) any {
+	return facades.Cache().Get(key)
+}
+
+func RetString(str string) string {
+	return str
+}
+`
+	return str
+}
+
 func StartYaegiCache() {
-
-	_, currentFilePath, _, _ := runtime.Caller(0)
-
-	// 设置默认配置文件路径
-	defaultConfigFile := filepath.Join(currentFilePath, "stream.go")
-	// 命令行参数
-	configFile := flag.String("c", defaultConfigFile, "Path to the configuration file")
-	flag.Parse()
-
 	//睡500ms
 	time.Sleep(500 * time.Millisecond)
 	//执行os清屏，执行exec.Command clear指令
@@ -42,11 +50,11 @@ func StartYaegiCache() {
 	// 导入标准库
 	i.Use(stdlib.Symbols)
 	//导入自定义的符号
-	i.Use(symbols.Symbols)
+	i.Use(symbol.Symbols)
 	fmt.Println("Entering Yaegi REPL. Type your Go code below (type 'exit' or 'quit' to return to menu):")
 	fmt.Println("----------------------------------------  input command to start !-------------------------------------")
-
-	_, err3 := i.Eval(*configFile)
+	envStr := previewCacheStr()
+	_, err3 := i.Eval(envStr)
 	if err3 != nil {
 		fmt.Println("Error evaluating expression:", err3)
 		panic(err3)
