@@ -9,6 +9,7 @@ import (
 	"github.com/hulutech-web/goravel-tinker/view/cache"
 	"github.com/hulutech-web/goravel-tinker/view/command"
 	"github.com/hulutech-web/goravel-tinker/view/db"
+	"github.com/hulutech-web/goravel-tinker/view/query"
 	"github.com/pterm/pterm"
 	"os"
 	"os/exec"
@@ -63,9 +64,10 @@ func NewModel() Model {
 
 	rows := []table.Row{
 		{"1", "database", "Orm table", `Handle data with tablename,eg:db.Find("depts")`},
-		{"2", "cache", "Handle cache", `Handle Cache,eg:cache.Store("company","hulutech-web") \n cache.Get("company")`},
-		{"3", "command", "App key && Jwt key", "Params Generate.eg:command.JwtGenerate() or command.AppKeyGenerate() or command.Call(command string)"},
-		{"4", "Go Interpreter", "Go environment", "Enter interpreter mode,input yaegi in the terminal to enter the Go environment"},
+		{"2", "orm", "Orm Model", `Handle data with models,eg:db.Find("depts"),enter :save to exec`},
+		{"3", "cache", "Handle cache", `Handle Cache,eg:cache.Store("company","hulutech-web") \n cache.Get("company")`},
+		{"4", "command", "App key && Jwt key", "Params Generate.eg:command.JwtGenerate() or command.AppKeyGenerate() or command.Call(command string)"},
+		{"5", "Go Interpreter", "Go environment", "Enter interpreter mode,input yaegi in the terminal to enter the Go environment"},
 	}
 
 	// Initialize the table model
@@ -108,10 +110,12 @@ func Call() error {
 	case "1":
 		db.StartYaegiDatabase()
 	case "2":
-		cache.StartYaegiCache()
+		query.StartYaegiModel()
 	case "3":
-		command.StartYaegiCommand()
+		cache.StartYaegiCache()
 	case "4":
+		command.StartYaegiCommand()
+	case "5":
 		startYaegiShebang()
 	}
 	return nil
