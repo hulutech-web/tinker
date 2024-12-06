@@ -50,7 +50,17 @@ query.Query().Model(&models.User{}).Where("name LIKE ?", "%小%").FindOne(&user)
 #### 示例：可查看example.md文件
 
 #### 预览：
+- dashboard
 <p align="center">
   <img src="https://github.com/hulutech-web/tinker/blob/master/images/dashboard.png?raw=true" width="750" />
 </p>
 
+- db查询
+<p align="center">
+  <img src="https://github.com/hulutech-web/tinker/blob/master/images/db_query.png?raw=true" width="750" />
+</p>
+
+- orm查询
+<p align="center">
+  <img src="https://github.com/hulutech-web/tinker/blob/master/images/orm_query.png?raw=true" width="750" />
+</p>
