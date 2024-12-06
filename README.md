@@ -3,7 +3,17 @@
 ```go
 module goravel
 ````
-# tinker
+# tinker 安装
+- 克隆该扩展包，然后放入packages/目录下
+- 注册：
+```go
+import 	"goravel/packages/tinker"
+"providers": []foundation.ServiceProvider{
+	    ...
+        &tinker.ServiceProvider{},
+}
+```
+- 系统命令：``go run . artisan:tinker` 进入tinker环境，根据提示完成操作
 - install文件已经下载到本地的情况下，因为网络原因需要这样，如下是一个makefile文件内容
 install-yaegi:
 @bash install.sh -b $(GOPATH)/bin v0.9.0
@@ -23,9 +33,16 @@ db.WhereBetween("users","created_at", `2024-08-22 00:00:00`, `2024-08-23 23:59:5
 #### orm方法，请参考gorm的用法，在shebang下，需要引入模型，再进行操作
 - 示例
 ```go
-import "goravel/app/models"
-
 users:=[]models.User{}
 query.Model(&models.User{}).Where("name LIKE ?", "%市场%").Find(&users)
 ```
 #### 文件扫描，artisan tinker下，会观察app/models下的模型文件，当有变化时，会自动执行makefile文件，这个过程需要一定时间，请耐心等待
+
+#### 示例：可查看example.md文件
+
+#### 预览：
+<p align="center">
+  <img src="https://github.com/hulutech-web/tinker/blob/master/images/dashboard.png?raw=true" width="500" />
+</p>
+
+#### 注意事项：项目的go.mod文件中，必须为 module goravel 否则会出现错误
