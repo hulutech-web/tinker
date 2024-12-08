@@ -72,3 +72,8 @@ query.Query().Model(&models.User{}).Where("name LIKE ?", "%小%").FindOne(&user)
 <p align="center">
   <img src="https://github.com/hulutech-web/tinker/blob/master/images/orm_query.png?raw=true" width="750" />
 </p>
+
+- go运行时环境
+<p align="center">
+  <img src="https://github.com/hulutech-web/tinker/blob/master/images/runtime.png?raw=true" width="750" />
+</p>
