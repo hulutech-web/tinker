@@ -25,6 +25,14 @@ import 	"goravel/packages/tinker"
 go generate ./... 
 - ``go mod tidy``
 
+#### go运行时
+```go
+fmt.Println("github.com/huluweb-tech/tinker") //直接输入代码，回车查看结果，控制台输出github.com/huluweb-tech/tinker
+
+1+1 //输入1+1，回车，控制台输出2
+
+
+```
 #### 数据库方法
 ```go
 db.Find("depts")
@@ -58,6 +66,15 @@ query.Query().Model(&models.User{}).Where("name LIKE ?", "%小%").FindOne(&user)
 #### 示例：可查看example.md文件
 
 #### 预览：
+- go运行时环境，go词法分析，输入结果，
+<p align="center">
+  <img src="https://github.com/hulutech-web/tinker/blob/master/images/runtime1.png?raw=true" width="750" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/hulutech-web/tinker/blob/master/images/runtime2.png?raw=true" width="750" />
+</p>
+
 - dashboard
 <p align="center">
   <img src="https://github.com/hulutech-web/tinker/blob/master/images/dashboard.png?raw=true" width="750" />
@@ -73,7 +90,4 @@ query.Query().Model(&models.User{}).Where("name LIKE ?", "%小%").FindOne(&user)
   <img src="https://github.com/hulutech-web/tinker/blob/master/images/orm_query.png?raw=true" width="750" />
 </p>
 
-- go运行时环境
-<p align="center">
-  <img src="https://github.com/hulutech-web/tinker/blob/master/images/runtime.png?raw=true" width="750" />
-</p>
+
