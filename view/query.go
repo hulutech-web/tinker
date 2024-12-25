@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
-	"goravel-tinker/styles"
-	"goravel-tinker/symbols"
 	"log"
 	"os"
 	"os/exec"
@@ -25,6 +23,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	styles "tinker/styles"
+	"tinker/symbols"
 )
 
 type Engine struct {

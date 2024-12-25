@@ -1,6 +1,6 @@
 # 定义要执行的命令
 YAEGI_CMD := yaegi extract
-SOURCE_DIR := goravel-tinker/app/models
+SOURCE_DIR := tinker/app/models
 TARGET_DIR := ./symbols
 
 # 目标
@@ -20,7 +20,7 @@ extract_models:
 
 # 移动生成的文件到目标目录，并修改 package 声明
 move_file:
-	@find . -maxdepth 1 -name 'goravel-tinker-app-models.go' -exec sed -i '' 's/package tinker/package symbols/' {} \;
-	@mv goravel-tinker-app-models.go $(TARGET_DIR)/
-	@echo "Moved and updated package name in goravel-tinker-app-models.go to 'symbols'"
+	@find . -maxdepth 1 -name 'tinker-app-models.go' -exec sed -i '' 's/package tinker/package symbols/' {} \;
+	@mv tinker-app-models.go $(TARGET_DIR)/
+	@echo "Moved and updated package name in tinker-app-models.go to 'symbols'"
 .PHONY: all install_yaegi extract_models move_file

@@ -7,11 +7,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
-	"goravel-tinker/symbols"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+	"tinker/symbols"
 )
 
 func StartYaegiCache() {

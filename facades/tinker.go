@@ -1,9 +1,9 @@
 package facades
 
 import (
-	tinker "github.com/hulutech-web/tinker"
-	"github.com/hulutech-web/tinker/contracts"
 	"log"
+	"tinker"
+	"tinker/contracts"
 )
 
 func Tinker() contracts.Tinker {
