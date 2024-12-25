@@ -3,10 +3,10 @@
 //go:generate yaegi extract gorm.io/driver/mysql
 //go:generate yaegi extract gorm.io/gorm
 //go:generate yaegi extract gorm.io/gorm/logger
-//go:generate yaegi extract goravel-tinker/funcs/cache
-//go:generate yaegi extract goravel-tinker/funcs/command
-//go:generate yaegi extract goravel-tinker/funcs/db
-//go:generate yaegi extract goravel-tinker/funcs/query
+//go:generate yaegi extract tinker/funcs/cache
+//go:generate yaegi extract tinker/funcs/command
+//go:generate yaegi extract tinker/funcs/db
+//go:generate yaegi extract tinker/funcs/query
 //go:generate yaegi extract github.com/goravel/framework/database/orm
 
 package symbols

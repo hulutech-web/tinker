@@ -3,7 +3,6 @@ package commands
 import (
 	"github.com/goravel/framework/contracts/console"
 	"github.com/goravel/framework/contracts/console/command"
-	"goravel-tinker/view"
 )
 
 type Tinker struct{}
