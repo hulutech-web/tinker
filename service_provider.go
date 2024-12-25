@@ -3,7 +3,7 @@ package tinker
 import (
 	"github.com/goravel/framework/contracts/console"
 	"github.com/goravel/framework/contracts/foundation"
-	"github.com/hulutech-web/tinker/commands"
+	"tinker/commands"
 )
 
 const Binding = "tinker"
