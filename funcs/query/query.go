@@ -56,7 +56,7 @@ func Model(value interface{}) (tx *gorm.DB) {
 func Create(value interface{}) interface{} {
 	Clear()
 	dest = value
-	DB().Model(value).Create(&dest)
+	DB().Create(&dest)
 	return dest
 }
 

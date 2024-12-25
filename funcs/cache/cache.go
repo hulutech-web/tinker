@@ -1,9 +1,16 @@
 package cache
 
-import "github.com/goravel/framework/facades"
+import (
+	"fmt"
+	"github.com/goravel/framework/facades"
+)
 
 func Store(key string, value string) {
-	facades.Cache().Put(key, value, 0)
+	err := facades.Cache().Put(key, value, 0)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		panic(err)
+	}
 }
 
 func Get(key string) any {
